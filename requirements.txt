@@ -27,8 +27,19 @@ numpy==1.26.4
 
 # ---- Face verification ----
 deepface==0.0.92
-tensorflow==2.15.0
+tensorflow==2.15.0P
 tf-keras==2.15.0
+
+# ---- Tampering CNN (forgery_mobilenet_v2) ----
+# Imported directly by scripts/train_forgery_cnn.py, scripts/evaluate_forgery_cnn.py,
+# and app/services/cnn_forgery_service.py — was missing from this file even though
+# it's a hard dependency for training/evaluation (the app itself degrades gracefully
+# without it, but the training scripts will crash on import without these installed).
+# NOT pinned to a specific version: install the CUDA build matching your GPU driver
+# via https://pytorch.org/get-started/locally/ for GPU training, or `pip install torch
+# torchvision` for CPU-only.
+torch
+torchvision
 
 # ---- Validation / misc ----
 scikit-learn==1.5.0

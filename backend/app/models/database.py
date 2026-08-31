@@ -20,6 +20,7 @@ class ScreeningRecord(Base):
     document_type = Column(String(50), nullable=True, default="UNKNOWN")
     document_number = Column(String(100), nullable=True, index=True)
     holder_name = Column(String(200), nullable=True, index=True)
+    date_of_birth = Column(String(20), nullable=True, index=True)
     document_number_encrypted = Column(Text, nullable=True)
     holder_name_encrypted = Column(Text, nullable=True)
     document_number_hash = Column(String(64), nullable=True, index=True)
@@ -44,6 +45,7 @@ class ScreeningRecord(Base):
             "document_type": self.document_type,
             "document_number": self.document_number,
             "holder_name": self.holder_name,
+            "date_of_birth": self.date_of_birth,
             "image_hash": self.image_hash,
             "extracted_fields": self.extracted_fields,
             "validation_result": self.validation_result,

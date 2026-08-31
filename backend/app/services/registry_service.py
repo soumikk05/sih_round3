@@ -64,10 +64,12 @@ def check_duplicate_identity(
     holder_name: Optional[str],
     image_hash: Optional[str],
     db: Optional[Session] = None,
+    date_of_birth: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Screens historical records to detect duplicate identity and replay fraud patterns:
       - Same document number previously screened under a different holder name.
+      - Same document number or holder name previously screened with a conflicting date of birth.
       - Same person name previously associated with a different document number.
       - Exact document image re-used under a different document number (Replay Attack).
     """
@@ -81,6 +83,7 @@ def check_duplicate_identity(
     try:
         clean_doc = document_number.strip().upper() if document_number else None
         clean_name = holder_name.strip().upper() if holder_name else None
+        clean_dob = date_of_birth.strip() if date_of_birth else None
 
         # Pattern 1: Same document number with different holder name
         if clean_doc:
@@ -97,6 +100,15 @@ def check_duplicate_identity(
                         f"DUPLICATE IDENTITY CONFLICT: Document number {clean_doc} previously screened under name '{rec.holder_name}'"
                     )
 
+                # Pattern 1b: Same document number, same/blank name, but conflicting date of birth
+                prior_dob = (rec.date_of_birth or "").strip()
+                if clean_dob and prior_dob and prior_dob != clean_dob:
+                    is_duplicate = True
+                    matched_ids.append(rec.id)
+                    flags.append(
+                        f"IDENTITY DOB MISMATCH: Document number {clean_doc} previously screened with date of birth '{rec.date_of_birth}', now presented as '{clean_dob}'"
+                    )
+
         # Pattern 2: Same person name with different document number
         if clean_name and len(clean_name) > 3:
             prior_name_records = db.query(ScreeningRecord).filter(
@@ -110,6 +122,15 @@ def check_duplicate_identity(
                     matched_ids.append(rec.id)
                     flags.append(
                         f"POTENTIAL MULTIPLE IDENTITIES: Person '{holder_name}' was previously screened with different document number '{rec.document_number}'"
+                    )
+
+                # Pattern 2b: Same name, but conflicting date of birth (possible impersonation)
+                prior_dob = (rec.date_of_birth or "").strip()
+                if clean_dob and prior_dob and prior_dob != clean_dob:
+                    is_duplicate = True
+                    matched_ids.append(rec.id)
+                    flags.append(
+                        f"IDENTITY DOB MISMATCH: Person '{holder_name}' previously screened with date of birth '{rec.date_of_birth}', now presented as '{clean_dob}'"
                     )
 
         # Pattern 3: Image replay hash collision with different document number
@@ -143,12 +164,13 @@ def screen_registry(
     image_hash: Optional[str],
     db: Optional[Session] = None,
     document_type: Optional[str] = None,
+    date_of_birth: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Consolidated registry check combining blacklist and duplicate detection.
     """
     blacklist_res = check_blacklist(document_number, db=db, document_type=document_type)
-    duplicate_res = check_duplicate_identity(document_number, holder_name, image_hash, db=db)
+    duplicate_res = check_duplicate_identity(document_number, holder_name, image_hash, db=db, date_of_birth=date_of_birth)
 
     flags = blacklist_res.get("flags", []) + duplicate_res.get("flags", [])
     is_blacklisted = blacklist_res.get("is_blacklisted", False)

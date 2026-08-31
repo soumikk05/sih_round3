@@ -89,6 +89,7 @@ def assess(
         values = {key: value.get("value") if isinstance(value, dict) else value for key, value in doc_fields.items()}
         doc_number = values.get("passport_number") or values.get("document_number") or values.get("id_number") or values.get("license_number") or values.get("visa_number")
         holder_name = f"{values.get('given_names', '')} {values.get('surname', '')}".strip() or values.get("name")
+        date_of_birth = values.get("date_of_birth") or values.get("dob")
 
         # 3. Rule-based Validation
         validation_result = validate_document(ocr_result)
@@ -116,6 +117,7 @@ def assess(
             holder_name=holder_name,
             image_hash=image_hash,
             db=db,
+            date_of_birth=date_of_birth,
         )
         timings["registry"] = round((perf_counter() - started) * 1000 - sum(timings.values()), 2)
 
@@ -139,6 +141,7 @@ def assess(
             document_type=classification.get("document_type", doc_type),
                 document_number=mask_identifier(doc_number),
                 holder_name=mask_name(holder_name),
+                date_of_birth=date_of_birth,
                 document_number_encrypted=encrypt_value(doc_number),
                 holder_name_encrypted=encrypt_value(holder_name),
                 document_number_hash=lookup_hash(doc_number),
