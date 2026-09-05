@@ -1,181 +1,253 @@
-/* DocShield Cyber Sidebar Styles */
+/* ==========================================================================
+   Sidebar — Persistent Application Navigation
+   Dense, clinical, border-based. No floating panel, no shadows.
+   ========================================================================== */
 
+.sidebar-overlay {
+  display: block;
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 30, 54, 0.55);
+  backdrop-filter: blur(2px);
+  z-index: 110;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.sidebar-overlay--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ---- Sidebar Shell ---- */
 .sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
   width: 280px;
-  min-height: calc(100vh - 120px);
-  background: rgba(11, 17, 32, 0.65);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  background: var(--sidebar-bg, var(--surface));
+  border-right: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
-  padding: 1rem;
-  position: sticky;
-  top: 96px;
+  z-index: 120;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transform: translateX(-100%);
+  transition: transform 0.25s var(--ease-out);
+  box-shadow: none;
 }
 
-.sidebar__header {
-  padding-bottom: 0.75rem;
-  margin-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+.sidebar--open {
+  transform: translateX(0);
+  box-shadow: 4px 0 28px rgba(11, 30, 54, 0.3);
 }
 
-.sidebar__title {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--text-muted);
+/* ---- Stripe ---- */
+.sidebar__stripe {
+  height: 3px;
+  flex-shrink: 0;
+  background: linear-gradient(90deg, #FF9933 33%, #FFFFFF 33%, #FFFFFF 66%, #138808 66%);
 }
 
-.sidebar__nav {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  flex: 1;
-}
-
-.sidebar__item {
+/* ---- Brand ---- */
+.sidebar__brand {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.65rem 0.85rem;
-  border-radius: 10px;
-  font-family: var(--font-mono);
-  font-size: 0.825rem;
-  color: var(--text-secondary);
-  text-decoration: none;
-  border: 1px solid transparent;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.sidebar__item:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.08);
-}
-
-.sidebar__item--active {
-  color: #38bdf8;
-  background: rgba(14, 165, 233, 0.1);
-  border-color: rgba(14, 165, 233, 0.35);
-  box-shadow: 0 0 20px rgba(14, 165, 233, 0.15), inset 0 0 12px rgba(14, 165, 233, 0.08);
-}
-
-.sidebar__item--active .sidebar__icon {
-  color: #38bdf8;
-  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.6));
-}
-
-.sidebar__icon {
-  color: var(--text-muted);
-  transition: all 0.2s ease;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  text-decoration: none !important;
   flex-shrink: 0;
 }
 
-.sidebar__label {
-  flex: 1;
+.sidebar__logo-wrap {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.sidebar__brand-text {
+  overflow: hidden;
+}
+
+.sidebar__title {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.sidebar__subtitle {
+  font-size: 0.5625rem;
+  color: var(--text-muted);
+  font-weight: 400;
+  letter-spacing: 0.01em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 160px;
 }
 
-.sidebar__badge {
-  font-size: 0.65rem;
-  padding: 0.15rem 0.4rem;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+/* ---- Navigation ---- */
+.sidebar__nav {
+  flex: 1;
+  padding: 0.5rem 0;
+  overflow-y: auto;
+}
+
+.sidebar__section {
+  padding: 0 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.sidebar__section-label {
+  font-size: 0.5625rem;
+  font-weight: 700;
   color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.5rem 0.625rem 0.25rem;
+  user-select: none;
+}
+
+.sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.625rem;
+  font-size: 0.75rem;
   font-weight: 500;
-}
-
-.sidebar__item--active .sidebar__badge {
-  background: rgba(14, 165, 233, 0.2);
-  border-color: rgba(14, 165, 233, 0.4);
-  color: #7dd3fc;
-}
-
-.sidebar__active-pill {
-  position: absolute;
-  left: 0;
-  top: 15%;
-  bottom: 15%;
-  width: 3px;
-  background: #38bdf8;
-  border-radius: 0 4px 4px 0;
-  box-shadow: 0 0 8px #38bdf8;
-}
-
-/* Pinned Health Footer */
-.sidebar__health {
-  margin-top: 1rem;
-  padding: 0.75rem;
-  background: rgba(3, 7, 18, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.sidebar__health-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.sidebar__health-status {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-}
-
-.sidebar__health-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  width: 100%;
+  text-align: left;
+  transition: color var(--duration-fast) ease,
+              background var(--duration-fast) ease;
   position: relative;
 }
 
-.sidebar__health-dot--online {
-  background: #10b981;
-  box-shadow: 0 0 8px #10b981;
+.sidebar__link:hover {
+  color: var(--text-primary);
+  background: var(--surface-hover);
 }
 
-.sidebar__health-dot--offline {
-  background: #f43f5e;
-  box-shadow: 0 0 8px #f43f5e;
+.sidebar__link--active {
+  color: var(--accent);
+  background: var(--accent-light);
+  font-weight: 600;
 }
 
-.sidebar__health-meta {
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
-  color: var(--text-muted);
+.sidebar__link--active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+}
+
+.sidebar__link-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
   display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
+  align-items: center;
+  justify-content: center;
 }
 
-@media (max-width: 1024px) {
-  .sidebar {
-    width: 100%;
-    min-height: auto;
-    position: static;
-    margin-bottom: 1.5rem;
-  }
-  
-  .sidebar__nav {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 0.5rem;
-  }
+.sidebar__link-badge {
+  margin-left: auto;
+  font-size: 0.5625rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0 4px;
+  line-height: 1.6;
+}
+
+/* ---- Sidebar Footer (user info) ---- */
+.sidebar__footer {
+  border-top: 1px solid var(--border-subtle);
+  padding: 0.625rem 0.75rem;
+  flex-shrink: 0;
+}
+
+.sidebar__user {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sidebar__user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  background: var(--accent-light);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.sidebar__user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebar__user-role {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-transform: capitalize;
+}
+
+.sidebar__user-status {
+  font-size: 0.5625rem;
+  color: var(--text-muted);
+}
+
+.sidebar__logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color var(--duration-fast) ease,
+              border-color var(--duration-fast) ease,
+              background var(--duration-fast) ease;
+  flex-shrink: 0;
+}
+
+.sidebar__logout-btn:hover {
+  color: var(--risk-high);
+  border-color: var(--risk-high);
+  background: var(--risk-high-bg);
 }

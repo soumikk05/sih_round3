@@ -1,198 +1,152 @@
-import { useState, useEffect } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
 import { motion } from 'motion/react';
 import {
   ShieldCheck,
   FileText,
-  CheckCircle2,
-  Scan,
-  ScanFace,
-  Activity,
-  Server,
-  Zap,
-  RefreshCw,
+  FileSearch,
+  CheckCircle,
+  ShieldAlert,
+  UserCheck,
+  Clock,
+  Shield,
+  Trash,
+  LogOut,
+  User,
 } from 'lucide-react';
-import { screeningApi } from '../../api/screening.api';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
 import './Sidebar.css';
 
-const MODULE_ITEMS = [
+const navSections = [
   {
-    path: '/pipeline',
-    aliases: ['/'],
-    label: 'Risk Pipeline',
-    sublabel: 'Full Assessment',
-    badge: 'PRIMARY',
-    icon: ShieldCheck,
+    label: 'Screening Modules',
+    items: [
+      { path: '/', label: 'Document Screening (Portal)', icon: FileText, roles: null },
+      { path: '/pipeline', label: 'Full Risk Assessment', icon: ShieldCheck, roles: ['officer', 'supervisor', 'admin', 'auditor'] },
+      { path: '/ocr', label: 'Neural OCR Extraction', icon: FileSearch, roles: ['officer', 'supervisor', 'admin', 'auditor'] },
+      { path: '/validation', label: 'Document Validation', icon: CheckCircle, roles: ['officer', 'supervisor', 'admin', 'auditor'] },
+      { path: '/tampering', label: 'Tampering Forensics', icon: ShieldAlert, roles: ['officer', 'supervisor', 'admin', 'auditor'] },
+      { path: '/face', label: 'Face Verification', icon: UserCheck, roles: ['officer', 'supervisor', 'admin', 'auditor'] },
+    ],
   },
   {
-    path: '/ocr',
-    label: 'OCR Extraction',
-    sublabel: 'Neural Text & MRZ',
-    badge: 'OCR',
-    icon: FileText,
+    label: 'Records',
+    items: [
+      {
+        path: '/history',
+        label: 'Screening History',
+        icon: Clock,
+        roles: ['officer', 'supervisor', 'admin', 'auditor'],
+      },
+    ],
   },
   {
-    path: '/validation',
-    label: 'Doc Validation',
-    sublabel: 'Rule Engine & ICAO',
-    badge: 'RULES',
-    icon: CheckCircle2,
-  },
-  {
-    path: '/tampering',
-    label: 'Tampering Analysis',
-    sublabel: 'ELA + CNN Forgery',
-    badge: 'FORENSIC',
-    icon: Scan,
-  },
-  {
-    path: '/face',
-    label: 'Face Verification',
-    sublabel: 'Biometrics & Liveness',
-    badge: 'DEEPFACE',
-    icon: ScanFace,
+    label: 'Administration',
+    items: [
+      {
+        path: '/admin',
+        label: 'Document Blacklist',
+        icon: Shield,
+        roles: ['admin', 'supervisor'],
+      },
+    ],
   },
 ];
 
-export function Sidebar() {
+export function Sidebar({ isOpen, onClose }) {
+  const { user, logout } = useAuth();
   const location = useLocation();
-  const [healthStatus, setHealthStatus] = useState({
-    online: false,
-    pingMs: null,
-    version: null,
-    loading: true,
-  });
+  const navigate = useNavigate();
 
-  const checkServerHealth = async () => {
-    const start = performance.now();
-    try {
-      const data = await screeningApi.checkHealth();
-      const ping = Math.round(performance.now() - start);
-      setHealthStatus({
-        online: true,
-        pingMs: ping,
-        version: data?.version || 'v1.0.0',
-        loading: false,
-      });
-    } catch (err) {
-      setHealthStatus({
-        online: false,
-        pingMs: null,
-        version: null,
-        loading: false,
-      });
-    }
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
 
-  useEffect(() => {
-    checkServerHealth();
-    const interval = setInterval(checkServerHealth, 15000);
-    return () => clearInterval(interval);
-  }, []);
+  const isActive = (path) => location.pathname === path;
 
-  const isActive = (item) => {
-    if (item.aliases && item.aliases.includes(location.pathname)) return true;
-    return location.pathname === item.path;
-  };
+  if (!user) return null;
+
+  const roleInitial = (user.role || 'U')[0].toUpperCase();
 
   return (
-    <motion.aside
-      animate={{ 
-        y: [-4, 4, -2, 5, -4],
-        rotateZ: [-0.5, 0.3, -0.4, 0.5, -0.5],
-        boxShadow: [
-          "0 8px 32px rgba(6, 182, 212, 0.15)",
-          "0 8px 48px rgba(6, 182, 212, 0.4)",
-          "0 8px 24px rgba(168, 85, 247, 0.2)",
-          "0 8px 40px rgba(6, 182, 212, 0.3)",
-          "0 8px 32px rgba(6, 182, 212, 0.15)"
-        ]
-      }}
-      transition={{
-        duration: 8,
-        repeat: Infinity,
-        ease: "easeInOut",
-        times: [0, 0.25, 0.5, 0.75, 1]
-      }}
-      className="sidebar overflow-hidden"
-    >
-      {/* Decorative corner accents with continuous pulse */}
-      <motion.div 
-        animate={{ opacity: [0.5, 1, 0.5] }}
-        transition={{ duration: 3, repeat: Infinity }}
-        className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-cyan-500/80 rounded-tl-xl pointer-events-none" 
-      />
-      <motion.div 
-        animate={{ opacity: [1, 0.5, 1] }}
-        transition={{ duration: 4, repeat: Infinity }}
-        className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-cyan-500/80 rounded-br-xl pointer-events-none" 
+    <>
+      {/* Mobile overlay */}
+      <div
+        className={`sidebar-overlay ${isOpen ? 'sidebar-overlay--visible' : ''}`}
+        onClick={onClose}
       />
 
-      {/* Sidebar Top Header */}
-      <div className="sidebar__header flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Zap size={14} className="text-cyan-400" />
-          <span className="sidebar__title">Screening Modules</span>
-        </div>
-        <span className="text-[10px] font-mono text-cyan-400/70 bg-cyan-400/10 px-1.5 py-0.5 rounded border border-cyan-400/20">
-          5 ACTIVE
-        </span>
-      </div>
+      <aside className={`sidebar ${isOpen ? 'sidebar--open' : ''}`}>
+        {/* Tricolor stripe */}
+        <div className="sidebar__stripe" />
 
-      {/* Nav List */}
-      <nav className="sidebar__nav">
-        {MODULE_ITEMS.map((item) => {
-          const active = isActive(item);
-          const Icon = item.icon;
+        {/* Brand */}
+        <Link to="/" className="sidebar__brand" onClick={onClose}>
+          <div className="sidebar__logo-wrap">
+            <ShieldCheck size={16} />
+          </div>
+          <div className="sidebar__brand-text">
+            <div className="sidebar__title">AUTHENTRA</div>
+            <div className="sidebar__subtitle">Screening Portal</div>
+          </div>
+        </Link>
 
-          return (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              className={`sidebar__item ${active ? 'sidebar__item--active' : ''}`}
-            >
-              {active && (
-                <motion.div
-                  layoutId="activeSidebarPill"
-                  className="sidebar__active-pill"
-                  transition={{ type: 'spring', stiffness: 350, damping: 30 }}
-                />
-              )}
-              
-              <Icon size={18} className="sidebar__icon" />
-              
-              <div className="sidebar__label flex flex-col">
-                <span className="font-semibold">{item.label}</span>
-                <span className="text-[10px] text-slate-400 font-normal leading-tight">
-                  {item.sublabel}
-                </span>
+        {/* Navigation */}
+        <nav className="sidebar__nav">
+          {navSections.map((section) => {
+            // Filter items by role
+            const visibleItems = section.items.filter(
+              (item) => !item.roles || item.roles.includes(user.role)
+            );
+            if (visibleItems.length === 0) return null;
+
+            return (
+              <div key={section.label} className="sidebar__section">
+                <div className="sidebar__section-label">{section.label}</div>
+                {visibleItems.map((item) => {
+                  const Icon = item.icon;
+                  const active = isActive(item.path);
+
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      className={`sidebar__link ${active ? 'sidebar__link--active' : ''}`}
+                      onClick={onClose}
+                    >
+                      <span className="sidebar__link-icon">
+                        <Icon size={16} />
+                      </span>
+                      <span>{item.label}</span>
+                    </Link>
+                  );
+                })}
               </div>
+            );
+          })}
+        </nav>
 
-              <span className="sidebar__badge">{item.badge}</span>
-            </NavLink>
-          );
-        })}
-      </nav>
-
-      {/* Pinned Backend Health Card */}
-      <div className="sidebar__health">
-        <div className="sidebar__health-meta">
-          {healthStatus.online && (
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1">
-                <Activity size={10} /> Latency
-              </span>
-              <span className="text-emerald-400">{healthStatus.pingMs}ms</span>
+        {/* User profile / session at bottom */}
+        <div className="sidebar__footer">
+          <div className="sidebar__user">
+            <div className="sidebar__user-avatar">
+              {roleInitial}
             </div>
-          )}
-          {healthStatus.version && (
-            <div className="flex items-center justify-between">
-              <span>Engine</span>
-              <span className="text-cyan-400">{healthStatus.version}</span>
+            <div className="sidebar__user-info">
+              <div className="sidebar__user-role">{user.username || 'Officer'}</div>
+              <div className="sidebar__user-status">Active Session</div>
             </div>
-          )}
+            <button
+              type="button"
+              className="sidebar__logout-btn"
+              onClick={handleLogout}
+              title="Logout"
+            >
+              <LogOut size={13} />
+            </button>
+          </div>
         </div>
-      </div>
-    </motion.aside>
+      </aside>
+    </>
   );
 }

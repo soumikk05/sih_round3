@@ -59,9 +59,9 @@ export function UploadZone({
 
   return (
     <motion.div
-      whileHover={{ y: -6, scale: 1.015 }}
-      whileTap={{ scale: 0.99 }}
-      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+      whileHover={{ scale: 1.005 }}
+      whileTap={{ scale: 0.995 }}
+      transition={{ duration: 0.15 }}
       className={`upload-zone ${isDragOver ? 'upload-zone--dragover' : ''} ${
         file ? 'upload-zone--has-file' : ''
       }`}
@@ -131,19 +131,9 @@ export function UploadZone({
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
           >
-            <motion.div
-              className="upload-zone__icon-wrap"
-              animate={{
-                y: [0, -8, 0],
-              }}
-              transition={{
-                duration: 3.5,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            >
-              <Icon size={38} className="upload-zone__icon" />
-            </motion.div>
+            <div className="upload-zone__icon-wrap">
+              <Icon size={32} className="upload-zone__icon" />
+            </div>
             <div className="upload-zone__label">{label}</div>
             <div className="upload-zone__hint">{hint}</div>
           </motion.div>

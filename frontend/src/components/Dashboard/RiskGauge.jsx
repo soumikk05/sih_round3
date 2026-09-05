@@ -4,7 +4,7 @@ import { Badge } from '../common';
 import { scoreToHex } from '../../utils/helpers';
 import { AnimatedCounter } from '../common/AnimatedBg';
 
-const RADIUS = 85;
+const RADIUS = 68;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 export function RiskGauge({ score = 0, label = 'LOW' }) {

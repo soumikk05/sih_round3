@@ -13,6 +13,22 @@ import {
 } from 'lucide-react';
 import { Card, Badge } from '../common';
 
+const extractText = (item) => {
+  if (item === null || item === undefined) return '';
+  if (typeof item === 'object') {
+    if (item.value !== undefined && item.value !== null) return String(item.value);
+    return JSON.stringify(item);
+  }
+  return String(item);
+};
+
+const extractConfidence = (item) => {
+  if (item && typeof item === 'object' && typeof item.confidence === 'number') {
+    return Math.round(item.confidence * 100);
+  }
+  return null;
+};
+
 export function OcrResults({ ocr }) {
   const [copiedKey, setCopiedKey] = useState(null);
 
@@ -35,32 +51,22 @@ export function OcrResults({ ocr }) {
   const mrzText =
     raw_mrz_text || fields?.raw_mrz_text || (Array.isArray(raw_text_lines) && raw_text_lines.length > 0 ? raw_text_lines.join('\n') : null);
 
-  const getFieldText = (val) => {
-    if (val === null || val === undefined) return null;
-    if (typeof val === 'object') {
-      if (val.value !== undefined && val.value !== null) return String(val.value);
-      return JSON.stringify(val);
-    }
-    return String(val);
-  };
-
-  const rawDocType = getFieldText(document_type) || getFieldText(fields.document_type);
-  const rawDocNum = getFieldText(fields.document_number) || getFieldText(fields.doc_number) || getFieldText(fields.license_number) || getFieldText(fields.passport_number);
-  const rawName = getFieldText(fields.name) || getFieldText(fields.full_name) || getFieldText(fields.surname);
-  const rawNationality = getFieldText(fields.nationality) || getFieldText(fields.country) || getFieldText(fields.state);
-  const rawDob = getFieldText(fields.dob) || getFieldText(fields.date_of_birth);
-  const rawExpiry = getFieldText(fields.expiry_date) || getFieldText(fields.expiration_date);
-  const rawSex = getFieldText(fields.sex) || getFieldText(fields.gender);
-
   const fieldList = [
-    { label: 'Document Type', value: rawDocType, icon: Tag },
-    { label: 'Document Number', value: rawDocNum, icon: Hash },
-    { label: 'Full Name', value: rawName, icon: User },
-    { label: 'Nationality / State', value: rawNationality, icon: Globe },
-    { label: 'Date of Birth', value: rawDob, icon: Calendar },
-    { label: 'Expiration Date', value: rawExpiry, icon: Calendar },
-    { label: 'Sex / Gender', value: rawSex, icon: User },
-  ].filter((f) => f.value && f.value.trim() !== '');
+    { label: 'Document Type', raw: document_type || fields.document_type, icon: Tag },
+    { label: 'Document Number', raw: fields.document_number || fields.doc_number || fields.id_number || fields.passport_number, icon: Hash },
+    { label: 'Full Name', raw: fields.name || fields.full_name || fields.surname, icon: User },
+    { label: 'Nationality / State', raw: fields.nationality || fields.country || fields.state, icon: Globe },
+    { label: 'Date of Birth', raw: fields.dob || fields.date_of_birth, icon: Calendar },
+    { label: 'Expiration Date', raw: fields.expiry_date || fields.expiration_date || fields.expiry, icon: Calendar },
+    { label: 'Sex / Gender', raw: fields.sex || fields.gender, icon: User },
+    { label: 'Address', raw: fields.address, icon: Globe },
+  ]
+    .map((f) => ({
+      ...f,
+      value: extractText(f.raw),
+      confidence: extractConfidence(f.raw),
+    }))
+    .filter((f) => f.value && f.value.trim() !== '' && f.value !== 'null');
 
   const handleCopy = (text, key) => {
     navigator.clipboard.writeText(text);
@@ -70,8 +76,8 @@ export function OcrResults({ ocr }) {
 
   return (
     <Card
-      title="Neural OCR & Identity Extraction"
-      subtitle={rawDocType ? `Detected Document Profile: ${rawDocType}` : 'Extracted Text & Metadata'}
+      title="OCR Results"
+      subtitle={document_type ? `Document: ${document_type}` : 'Extracted text and metadata'}
       icon={FileText}
       action={
         <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
@@ -79,13 +85,13 @@ export function OcrResults({ ocr }) {
             label={face_detected ? 'Portrait Detected' : 'No Face In Doc'}
             variant={face_detected ? 'pass' : 'neutral'}
           />
-          {rawDocType && <Badge label={rawDocType} variant="info" />}
+          {document_type && <Badge label={document_type} variant="info" />}
         </div>
       }
     >
       {/* Key Fields Grid */}
       <div className="ocr-grid">
-        {fieldList.map(({ label, value, icon: Icon }, idx) => (
+        {fieldList.map(({ label, value, confidence, icon: Icon }, idx) => (
           <motion.div
             key={idx}
             initial={{ opacity: 0, y: 10 }}
@@ -101,6 +107,11 @@ export function OcrResults({ ocr }) {
             </div>
             <div className="ocr-field__value-row">
               <span className="ocr-field__value">{value}</span>
+              {confidence !== null && (
+                <span style={{ fontSize: '0.65rem', padding: '1px 5px', borderRadius: '4px', background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', fontWeight: 600 }}>
+                  {confidence}%
+                </span>
+              )}
               <motion.span whileTap={{ scale: 0.8 }} className="ocr-field__copy-btn">
                 {copiedKey === label ? <Check size={13} color="var(--success)" /> : <Copy size={13} />}
               </motion.span>
@@ -120,7 +131,7 @@ export function OcrResults({ ocr }) {
           <div className="mrz-block__header">
             <div className="mrz-block__title">
               <Fingerprint size={14} className="mrz-block__icon" />
-              <span>ICAO 9303 Raw MRZ Stream</span>
+              <span>Raw MRZ Data</span>
             </div>
             <motion.button
               whileHover={{ scale: 1.08 }}

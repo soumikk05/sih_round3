@@ -14,7 +14,7 @@ LABELS = ["passport", "visa", "national_id", "driving_license", "permit"]
 @lru_cache(maxsize=1)
 def _load_model():
     """Load a locally provisioned TensorFlow classifier only; never downloads at runtime."""
-    path = Path(__file__).resolve().parents[2] / "models" / "document_classifier.keras"
+    path = Path(__file__).resolve().parents[2] / "ml_artifacts" / "document_classifier.keras"
     if not path.exists():
         return None
     try:
@@ -24,7 +24,7 @@ def _load_model():
         return None
 
 
-def preprocess_image_for_classifier(image: np.ndarray, target_size=(224, 224)) -> np.ndarray:
+def preprocess_image_for_classifier(image: np.ndarray, target_size=(128, 128)) -> np.ndarray:
     """Standardize input image dimensions and RGB normalization."""
     rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     resized = cv2.resize(rgb, target_size)

@@ -249,7 +249,7 @@ export function PipelineScreen() {
                     AUTOMATED DECISION
                   </span>
                   <div className="font-mono text-sm font-bold mt-0.5 text-cyan-300">
-                    {decision}
+                    {typeof decision === 'object' ? JSON.stringify(decision) : String(decision)}
                   </div>
                 </div>
               )}

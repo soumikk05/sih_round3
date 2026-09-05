@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { historyApi } from '../../api/history.api';
 import { apiClient } from '../../api/client';
-import { Shield, AlertTriangle, Search, Plus, Trash2, ShieldOff, ShieldAlert, Trash } from 'lucide-react';
+import { AlertTriangle, Search, Plus, Trash2, ShieldOff, Trash } from 'lucide-react';
 import { Spinner, Badge } from '../common';
 
 export const AdminPage = () => {
@@ -53,7 +53,7 @@ export const AdminPage = () => {
   };
 
   const handleRemove = async (docNum) => {
-    if (!window.confirm(`Are you sure you want to deactivate blacklist entry for ${docNum}?`)) return;
+    if (!window.confirm(`Deactivate blacklist entry for ${docNum}?`)) return;
     try {
       await historyApi.removeFromBlacklist(docNum);
       fetchBlacklist();
@@ -63,139 +63,318 @@ export const AdminPage = () => {
   };
 
   const handlePurge = async () => {
-    if (!window.confirm("WARNING: This will permanently purge all expired evidence artifacts across the entire system. Proceed?")) return;
+    if (!window.confirm("This will permanently remove all expired evidence artifacts. Proceed?")) return;
     setIsPurging(true);
     try {
       const res = await apiClient.post('/api/privacy/purge');
-      alert(`Purge complete. Removed ${res.data.removed_files} expired evidence files.`);
+      alert(`Purge complete. Removed ${res.data.removed_files} files.`);
     } catch (err) {
       console.error(err);
-      alert("Purge failed. Check console.");
+      alert("Purge failed.");
     } finally {
       setIsPurging(false);
     }
   };
 
-  const filtered = blacklist.filter(b => b.document_number.toLowerCase().includes(search.toLowerCase()) || b.reason?.toLowerCase().includes(search.toLowerCase()));
+  const filtered = blacklist.filter(b =>
+    b.document_number.toLowerCase().includes(search.toLowerCase()) ||
+    b.reason?.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const inputStyle = {
+    width: '100%',
+    padding: '0.375rem 0.625rem',
+    borderRadius: 'var(--radius-md)',
+    border: '1px solid var(--input-border)',
+    background: 'var(--input-bg)',
+    color: 'var(--text-primary)',
+    fontSize: '0.8125rem',
+    outline: 'none',
+    fontFamily: 'var(--font-body)',
+    transition: 'border-color var(--duration-fast) ease',
+  };
 
   return (
-    <div className="pt-24 min-h-screen container mx-auto px-4 max-w-6xl pb-16">
-      <motion.div 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between mb-8"
+    <div
+      style={{
+        padding: '1rem 1.25rem 2rem',
+        minHeight: 'calc(100vh - 60px)',
+      }}
+    >
+      {/* Header */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '1rem',
+          paddingBottom: '0.75rem',
+          borderBottom: '1px solid var(--border-subtle)',
+        }}
       >
-        <div className="flex items-center gap-3">
-            <Shield size={28} className="text-cyan-400" />
-            <h1 className="text-3xl font-bold font-mono text-white tracking-widest uppercase">Global Threat Registry</h1>
+        <div>
+          <h1
+            style={{
+              fontSize: '1rem',
+              fontWeight: 700,
+              color: 'var(--text-primary)',
+              letterSpacing: '-0.01em',
+            }}
+          >
+            Document Blacklist
+          </h1>
+          <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.125rem' }}>
+            Manage flagged document numbers
+          </p>
         </div>
-        
-        <button 
+
+        <button
           onClick={handlePurge}
           disabled={isPurging}
-          className="flex items-center gap-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-4 py-2 rounded-lg font-mono text-sm transition-colors"
+          className="btn btn--danger"
+          style={{ fontSize: '0.6875rem' }}
         >
-          {isPurging ? <Spinner size="sm" /> : <Trash size={16} />}
-          Data Privacy Purge
+          {isPurging ? <Spinner size="sm" /> : <Trash size={13} />}
+          Data Purge
         </button>
-      </motion.div>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* ADD TO REGISTRY FORM */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Add form */}
         <div className="col-span-1">
-          <div className="bg-black/40 backdrop-blur-md border border-rose-500/30 rounded-xl p-6 sticky top-24">
-            <h2 className="text-xl font-mono text-rose-400 mb-4 flex items-center gap-2">
-              <ShieldAlert size={20} /> Watchlist Directive
+          <div
+            style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-md)',
+              padding: '1rem',
+              position: 'sticky',
+              top: '3.5rem',
+            }}
+          >
+            <h2
+              style={{
+                fontSize: '0.8125rem',
+                fontWeight: 700,
+                color: 'var(--text-primary)',
+                marginBottom: '0.75rem',
+              }}
+            >
+              Add to Blacklist
             </h2>
-            <form onSubmit={handleAdd} className="space-y-4">
+
+            <form onSubmit={handleAdd} style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
               <div>
-                <label className="block text-xs font-mono text-slate-400 uppercase mb-1">Document Number</label>
-                <input 
-                  type="text" 
-                  value={newDocNum} 
-                  onChange={e => setNewDocNum(e.target.value)} 
-                  className="w-full bg-black/60 border border-white/10 rounded-lg p-3 text-white font-mono focus:border-rose-500/50 outline-none transition-colors"
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '0.625rem',
+                    fontWeight: 600,
+                    color: 'var(--text-secondary)',
+                    marginBottom: '0.25rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.03em',
+                  }}
+                >
+                  Document Number
+                </label>
+                <input
+                  type="text"
+                  value={newDocNum}
+                  onChange={e => setNewDocNum(e.target.value)}
+                  style={inputStyle}
                   placeholder="e.g. A1234567"
                   required
                 />
               </div>
+
               <div>
-                <label className="block text-xs font-mono text-slate-400 uppercase mb-1">Reason / Threat Vector</label>
-                <input 
-                  type="text" 
-                  value={newReason} 
-                  onChange={e => setNewReason(e.target.value)} 
-                  className="w-full bg-black/60 border border-white/10 rounded-lg p-3 text-white font-mono focus:border-rose-500/50 outline-none transition-colors"
-                  placeholder="Known Forgery / Stolen"
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '0.625rem',
+                    fontWeight: 600,
+                    color: 'var(--text-secondary)',
+                    marginBottom: '0.25rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.03em',
+                  }}
+                >
+                  Reason
+                </label>
+                <input
+                  type="text"
+                  value={newReason}
+                  onChange={e => setNewReason(e.target.value)}
+                  style={inputStyle}
+                  placeholder="Known forgery, stolen, etc."
                 />
               </div>
-              <button 
-                type="submit" 
+
+              <button
+                type="submit"
                 disabled={isSubmitting || !newDocNum}
-                className="w-full py-3 px-4 bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/50 text-rose-300 font-mono font-bold rounded-lg transition-colors flex justify-center items-center gap-2 disabled:opacity-50"
+                className="btn btn--primary"
+                style={{ width: '100%', fontSize: '0.75rem' }}
               >
-                {isSubmitting ? <Spinner size="sm" /> : <Plus size={18} />}
-                Add to Registry
+                {isSubmitting ? <Spinner size="sm" /> : <Plus size={14} />}
+                Add Entry
               </button>
             </form>
           </div>
         </div>
 
-        {/* LIST */}
+        {/* List */}
         <div className="col-span-2">
-          <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-mono text-cyan-400">Active Threats</h2>
-              <div className="relative">
-                <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500" />
-                <input 
+          <div
+            style={{
+              background: 'var(--surface)',
+              border: '1px solid var(--border-subtle)',
+              borderRadius: 'var(--radius-md)',
+              overflow: 'hidden',
+            }}
+          >
+            {/* Search bar */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '0.5rem 0.75rem',
+                borderBottom: '1px solid var(--border-subtle)',
+              }}
+            >
+              <span
+                style={{
+                  fontSize: '0.8125rem',
+                  fontWeight: 700,
+                  color: 'var(--text-primary)',
+                }}
+              >
+                Active Entries
+              </span>
+              <div style={{ position: 'relative' }}>
+                <Search
+                  size={12}
+                  style={{
+                    position: 'absolute',
+                    left: '0.5rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: 'var(--text-muted)',
+                  }}
+                />
+                <input
                   type="text"
-                  placeholder="Search registry..."
+                  placeholder="Search…"
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  className="bg-black/60 border border-white/10 rounded-lg pl-9 pr-4 py-2 text-sm text-white font-mono outline-none focus:border-cyan-500/50"
+                  style={{
+                    ...inputStyle,
+                    width: '180px',
+                    paddingLeft: '1.75rem',
+                    fontSize: '0.6875rem',
+                  }}
                 />
               </div>
             </div>
 
             {loading ? (
-              <div className="py-12 flex justify-center"><Spinner size="lg" /></div>
+              <div style={{ padding: '2rem', display: 'flex', justifyContent: 'center' }}>
+                <Spinner size="md" />
+              </div>
             ) : filtered.length === 0 ? (
-              <div className="py-12 text-center text-slate-500 font-mono">No matching records found in the registry.</div>
+              <div
+                style={{
+                  padding: '2rem',
+                  textAlign: 'center',
+                  color: 'var(--text-muted)',
+                  fontSize: '0.8125rem',
+                }}
+              >
+                No matching entries.
+              </div>
             ) : (
-              <div className="space-y-3">
+              <div>
                 <AnimatePresence>
                   {filtered.map((item, idx) => (
-                    <motion.div 
+                    <motion.div
                       key={item.document_number}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ delay: idx * 0.05 }}
-                      className={`flex justify-between items-center p-4 rounded-lg border bg-black/60 ${item.status === 'active' ? 'border-rose-500/30' : 'border-white/10 opacity-50'}`}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ delay: idx * 0.03 }}
+                      whileHover={{ backgroundColor: 'var(--surface-hover)' }}
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: '0.5rem 0.75rem',
+                        borderBottom: '1px solid var(--border-subtle)',
+                        opacity: item.status !== 'active' ? 0.5 : 1,
+                        transition: 'background var(--duration-fast) ease',
+                      }}
                     >
-                      <div className="flex items-center gap-4">
-                        {item.status === 'active' ? <AlertTriangle className="text-rose-500" /> : <ShieldOff className="text-slate-500" />}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+                        {item.status === 'active'
+                          ? <AlertTriangle size={14} style={{ color: 'var(--risk-high)' }} />
+                          : <ShieldOff size={14} style={{ color: 'var(--text-muted)' }} />
+                        }
                         <div>
-                          <div className="font-mono text-white font-bold">{item.document_number}</div>
-                          <div className="text-xs font-mono text-slate-400 mt-1">{item.reason || 'No specific reason provided'}</div>
+                          <div
+                            style={{
+                              fontFamily: 'var(--font-mono)',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              color: 'var(--text-primary)',
+                            }}
+                          >
+                            {item.document_number}
+                          </div>
+                          <div
+                            style={{
+                              fontSize: '0.625rem',
+                              color: 'var(--text-muted)',
+                              marginTop: '1px',
+                            }}
+                          >
+                            {item.reason || 'No reason'}
+                          </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-6">
-                        <div className="flex flex-col items-end gap-1">
-                           <span className="text-[10px] text-slate-500 font-mono uppercase">Added</span>
-                           <span className="text-xs text-slate-300 font-mono">{new Date(item.added_at).toLocaleDateString()}</span>
-                        </div>
-                        <Badge label={item.status} variant={item.status === 'active' ? 'critical' : 'neutral'} />
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span
+                          style={{
+                            fontSize: '0.625rem',
+                            color: 'var(--text-muted)',
+                            fontFamily: 'var(--font-mono)',
+                          }}
+                        >
+                          {new Date(item.added_at).toLocaleDateString()}
+                        </span>
+                        <Badge
+                          label={item.status}
+                          variant={item.status === 'active' ? 'high' : 'neutral'}
+                        />
                         {item.status === 'active' && (
-                          <button 
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
                             onClick={() => handleRemove(item.document_number)}
-                            className="p-2 hover:bg-white/10 rounded transition-colors text-slate-400 hover:text-white ml-2"
-                            title="Deactivate Threat"
+                            style={{
+                              padding: '0.25rem',
+                              borderRadius: 'var(--radius-sm)',
+                              border: 'none',
+                              background: 'none',
+                              cursor: 'pointer',
+                              color: 'var(--text-muted)',
+                              transition: 'color var(--duration-fast) ease',
+                            }}
+                            title="Deactivate"
                           >
-                            <Trash2 size={16} />
-                          </button>
+                            <Trash2 size={13} />
+                          </motion.button>
                         )}
                       </div>
                     </motion.div>
@@ -205,7 +384,6 @@ export const AdminPage = () => {
             )}
           </div>
         </div>
-
       </div>
     </div>
   );

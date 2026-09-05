@@ -1,18 +1,21 @@
 import React from 'react';
-import { UploadPage } from '../Upload/UploadPage';
-import { Dashboard } from '../Dashboard/Dashboard';
-import { useAnalysis } from '../../hooks/useAnalysis';
+import { HeroSection } from './HeroSection';
+import { IdentraConnect } from './IdentraConnect';
+import { ScreeningModularWorkspace } from '../Modules/ScreeningModularWorkspace';
+import { useAuth } from '../../hooks/useAuth';
 
 export const Home = () => {
-  const { result, loading, status, error, analyze, clearResult } = useAnalysis();
+  const { user } = useAuth();
 
   return (
-    <main className="app__main pt-24 min-h-screen">
-      {result ? (
-        <Dashboard result={result} onBack={clearResult} />
-      ) : (
-        <UploadPage onAnalyze={analyze} loading={loading} status={status} error={error} />
+    <main className="app__main">
+      <HeroSection />
+      {/* 5 Core Screening Modules & Risk Pipeline — Restricted to authorized users */}
+      {user && (
+        <ScreeningModularWorkspace defaultModule="pipeline" />
       )}
+      {/* Interactive National Security & Citizen Engagement Section */}
+      <IdentraConnect />
     </main>
   );
 };

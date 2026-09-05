@@ -27,14 +27,11 @@ export function FacePanel({ face }) {
     );
   }
 
-  const {
-    match = false,
-    similarity_score,
-    confidence = 0,
-    face_detected_doc = true,
-    face_detected_selfie = true,
-    details = {},
-  } = face;
+  const match = Boolean(face.matched ?? face.match);
+  const similarity_score = face.similarity ?? face.similarity_score ?? face.confidence;
+  const face_detected_doc = Boolean(face.face_detected_document ?? face.face_detected_doc ?? true);
+  const face_detected_selfie = Boolean(face.face_detected_selfie ?? true);
+  const details = face.details || {};
 
   const simPct =
     similarity_score !== undefined
@@ -52,7 +49,7 @@ export function FacePanel({ face }) {
   return (
     <Card
       title="Biometric Face Verification"
-      subtitle="DeepFace 512-dim Embedding Vector Cosine Similarity"
+      subtitle="Face comparison between document and selfie"
       icon={ScanFace}
       action={
         <Badge
@@ -65,7 +62,7 @@ export function FacePanel({ face }) {
       {/* Similarity Score */}
       <div className="module-metric">
         <div className="module-metric__header">
-          <span className="module-metric__label">Vector Cosine Similarity</span>
+          <span className="module-metric__label">Similarity Score</span>
           <span className="module-metric__value" style={{ color: simColor }}>
             {simPct}%
           </span>
@@ -97,7 +94,7 @@ export function FacePanel({ face }) {
         >
           <div className="face-status-card__header">
             <ScanFace size={15} className="face-status-card__icon" />
-            <span>Live Selfie Stream</span>
+            <span>Selfie</span>
           </div>
           <div className="face-status-card__badge">
             <Badge
@@ -111,7 +108,7 @@ export function FacePanel({ face }) {
       {/* Model Spec Note */}
       <div className="face-spec-footer">
         <Sparkles size={13} className="face-spec-footer__icon" />
-        <span>Model: Facenet512 • Distance Threshold: 0.30 • Alignment: MTCNN Active</span>
+        <span>Facenet512 · Distance Threshold: 0.30 · MTCNN Alignment</span>
       </div>
     </Card>
   );

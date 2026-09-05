@@ -21,15 +21,14 @@ export function TamperingPanel({ tampering }) {
     );
   }
 
-  const score = tampering.tampering_score ?? tampering.score ?? 0;
-  const tampering_detected = tampering.tampered ?? tampering.tampering_detected ?? (score > 40);
-  const ela_score = tampering.signals?.ela ?? tampering.detectors?.ela ?? tampering.ela_score;
+  const tampering_detected = Boolean(tampering.is_tampered ?? tampering.tampering_detected ?? tampering.tampered);
+  const score = Math.round(tampering.final_score ?? tampering.tampering_score ?? tampering.score ?? 0);
+  const ela_score = tampering.signals?.ela ?? tampering.ela_score ?? tampering.details?.ela_score;
   const noise_variance = tampering.noise_variance ?? tampering.details?.noise_variance;
-  const copy_move_detected = tampering.copy_move_detected ?? (tampering.signals?.copy_move > 40) ?? false;
-  const details = tampering.details || {};
+  const copy_move_detected = Boolean(tampering.signals?.copy_move >= 50 || tampering.copy_move_detected || tampering.copy_move?.triggered);
+  const details = tampering.details || tampering.signals || {};
 
-  const numScore = typeof score === 'number' ? Math.round(score) : Number(score) || 0;
-  const color = scoreToHex(numScore);
+  const color = scoreToHex(score);
 
   return (
     <Card
@@ -38,7 +37,7 @@ export function TamperingPanel({ tampering }) {
       icon={Scan}
       action={
         <Badge
-          label={tampering_detected ? 'TAMPERING DETECTED' : 'AUTHENTIC PIXELS'}
+          label={tampering_detected ? 'TAMPERING DETECTED' : 'CLEAN'}
           variant={tampering_detected ? 'high' : 'pass'}
           icon={tampering_detected ? ShieldAlert : ShieldCheck}
         />
@@ -47,7 +46,7 @@ export function TamperingPanel({ tampering }) {
       {/* Forensic Score */}
       <div className="module-metric">
         <div className="module-metric__header">
-          <span className="module-metric__label">Tampering Risk Index</span>
+          <span className="module-metric__label">Tampering Score</span>
           <span className="module-metric__value" style={{ color }}>
             {score}/100
           </span>
@@ -67,9 +66,9 @@ export function TamperingPanel({ tampering }) {
               <span>Error Level Analysis (ELA)</span>
             </div>
             <div className="forensic-card__val">
-              {typeof ela_score === 'number' ? `${ela_score.toFixed(1)}%` : ela_score}
+              {typeof ela_score === 'number' ? `${(ela_score * 100).toFixed(1)}%` : ela_score}
             </div>
-            <div className="forensic-card__desc">Compression anomaly rate across 90-85% recompression delta</div>
+            <div className="forensic-card__desc">Compression anomaly rate</div>
           </motion.div>
         )}
 
@@ -85,7 +84,7 @@ export function TamperingPanel({ tampering }) {
             <div className="forensic-card__val">
               {typeof noise_variance === 'number' ? noise_variance.toFixed(2) : noise_variance}
             </div>
-            <div className="forensic-card__desc">Sensor pattern noise uniformity consistency score</div>
+            <div className="forensic-card__desc">Sensor noise uniformity</div>
           </motion.div>
         )}
 
@@ -100,7 +99,7 @@ export function TamperingPanel({ tampering }) {
           <div className="forensic-card__val" style={{ color: copy_move_detected ? 'var(--risk-high)' : 'var(--risk-low)' }}>
             {copy_move_detected ? 'Cloned Regions Found' : 'Clean (No Duplication)'}
           </div>
-          <div className="forensic-card__desc">SIFT feature clustering for cloned or spliced text stamps</div>
+          <div className="forensic-card__desc">SIFT feature clustering for duplicated regions</div>
         </motion.div>
       </div>
 
@@ -111,7 +110,7 @@ export function TamperingPanel({ tampering }) {
           className="tampering-alert"
         >
           <Flame size={16} className="tampering-alert__icon" />
-          <span>High probability of digital alteration or text block tampering detected in image matrix.</span>
+          <span>Digital alteration or tampering detected in the image.</span>
         </motion.div>
       )}
     </Card>

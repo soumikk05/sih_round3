@@ -86,52 +86,27 @@ export const screeningApi = {
   },
 
   /**
-   * Request randomized liveness challenge & session token.
+   * Face liveness check.
    */
-  getLivenessChallenge: async () => {
-    const response = await apiClient.post('/api/face/liveness-challenge');
-    return response.data;
-  },
-
-  /**
-   * Verify burst of camera frames against session challenge.
-   */
-  verifyLivenessFrames: async (sessionToken, frames) => {
-    const form = new FormData();
-    form.append('session_token', sessionToken);
-    frames.forEach((frame, idx) => {
-      // frame can be a File or a Blob
-      const filename = frame.name || `frame_${idx}.jpg`;
-      form.append('frames', frame, filename);
-    });
-    const response = await apiClient.post('/api/face/liveness-verify', form, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-      timeout: 15000,
-    });
-    return response.data;
-  },
-
-  /**
-   * Passive face liveness check (single image).
-   */
-  checkLiveness: async (selfieFile, challenge = null) => {
+  checkLiveness: async (selfieFile) => {
     const form = new FormData();
     form.append('selfie_photo', selfieFile);
-    const params = challenge ? { challenge } : {};
+    form.append('file', selfieFile);
     const response = await apiClient.post('/api/face/liveness', form, {
-      params,
       headers: { 'Content-Type': 'multipart/form-data' }
     });
     return response.data;
   },
 
   /**
-   * Face verification (Document Photo vs Live Selfie).
+   * Face verification (Document vs Selfie).
    */
   verifyFace: async (documentFile, selfieFile) => {
     const form = new FormData();
     form.append('document_photo', documentFile);
+    form.append('document_image', documentFile);
     form.append('selfie_photo', selfieFile);
+    form.append('selfie_image', selfieFile);
     const response = await apiClient.post('/api/face/verify', form, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
@@ -139,7 +114,7 @@ export const screeningApi = {
   },
 
   /**
-   * Health ping.
+   * Check backend health and ping latency.
    */
   checkHealth: async () => {
     const response = await apiClient.get('/health');

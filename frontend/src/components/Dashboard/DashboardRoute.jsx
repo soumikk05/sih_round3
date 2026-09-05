@@ -20,15 +20,15 @@ export const DashboardRoute = () => {
   }, [id]);
 
   if (loading) {
-    return <div className="pt-24 min-h-screen text-center text-cyan-400">Loading Dashboard...</div>;
+    return <div className="pt-12 min-h-screen text-center" style={{ color: 'var(--accent)' }}>Loading Dashboard...</div>;
   }
 
   if (!result) {
-    return <div className="pt-24 min-h-screen text-center text-rose-400">Failed to load Dashboard data.</div>;
+    return <div className="pt-12 min-h-screen text-center" style={{ color: 'var(--risk-high)' }}>Failed to load Dashboard data.</div>;
   }
 
   return (
-    <div className="pt-24 min-h-screen">
+    <div className="min-h-screen">
       <Dashboard result={result} onBack={() => window.history.back()} />
     </div>
   );

@@ -1,63 +1,22 @@
-# Python Virtual Environments
 venv/
-.venv/
-env/
-ENV/
-env.bak/
-venv.bak/
-
-# Python bytecode and caches
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Large dataset downloads & temp artifacts
-**/midv500_data/
-**/.deepface/
-*.h5
-*.weights
-*.db
-backend/dataset/evidence/*
-!backend/dataset/evidence/.gitkeep
-backend/dataset/heatmaps/*
-!backend/dataset/heatmaps/.gitkeep
-
-# Frontend build & dependencies
 node_modules/
 dist/
-
-# Environment files
-.env
-.env.local
-
-# Testing & Coverage
+frontend/dist/
 .pytest_cache/
-.coverage
-htmlcov/
-
-# IDE & Editor files
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# OS files
-.DS_Store
-Thumbs.db
+.env
+backend/dataset/
+backend/midv500_data/
+dataset/
+midv500_data/
+*.db
+backend/reports/
+*.pt
+*.keras
+*.h5
+*.onnx
+.env.example
+.venv/
+backend/.coverage
+backend/scratch/
+backend/audit_vault/

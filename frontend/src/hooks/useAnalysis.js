@@ -16,8 +16,12 @@ export function useAnalysis() {
     try {
       // 1. Pre-flight: Check Image Quality
       const qualityData = await screeningApi.checkImageQuality(documentFile);
-      if (!qualityData.is_acceptable) {
-        throw new Error(`Image quality is too low: ${qualityData.reason}`);
+      const isAcceptable = qualityData.acceptable ?? qualityData.is_acceptable ?? true;
+      if (!isAcceptable) {
+        const issues = Array.isArray(qualityData.issues) && qualityData.issues.length > 0
+          ? qualityData.issues.join(', ')
+          : (qualityData.reason || 'Image quality insufficient');
+        throw new Error(`Image quality is too low: ${issues}`);
       }
 
       // 2. Pre-flight: Classify Document

@@ -1,15 +1,36 @@
 import { motion } from 'motion/react';
 import './common.css';
 
-export { AnimatedBg } from './AnimatedBg';
 export { AnimatedText } from './AnimatedBg';
 export { CyberText } from './CyberText';
-export { HeroIntro } from './HeroIntro';
-export { FloatingElements } from './FloatingElements';
-export { Skeleton } from './Skeleton';
 
 /**
- * Glassmorphic interactive Card with Motion hover animations
+ * Skeleton loading placeholder
+ */
+export function Skeleton({ variant = 'text', width = '100%', height = '16px', className = '', style = {} }) {
+  const getRadius = () => {
+    if (variant === 'circular') return '9999px';
+    if (variant === 'rounded') return '8px';
+    return '4px';
+  };
+
+  return (
+    <div
+      className={`skeleton animate-pulse ${className}`}
+      style={{
+        width,
+        height: variant === 'circular' ? (width || height) : height,
+        borderRadius: getRadius(),
+        backgroundColor: 'rgba(255, 255, 255, 0.08)',
+        display: 'inline-block',
+        ...style,
+      }}
+    />
+  );
+}
+
+/**
+ * Clean professional Card with Motion hover animations
  */
 export function Card({
   title,
@@ -21,7 +42,6 @@ export function Card({
   children,
   className = '',
   delay = 0,
-  glowColor = 'rgba(14, 165, 233, 0.25)',
 }) {
   return (
     <motion.div
@@ -30,8 +50,7 @@ export function Card({
       transition={{ duration: 0.5, delay, ease: [0.16, 1, 0.3, 1] }}
       whileHover={{
         y: -4,
-        boxShadow: `0 12px 30px -10px rgba(0, 0, 0, 0.7)`,
-        borderColor: 'rgba(255, 255, 255, 0.2)',
+        boxShadow: 'var(--card-shadow-hover)',
       }}
       className={`card ${className}`}
     >
@@ -39,11 +58,11 @@ export function Card({
         <div className="card__header">
           {Icon && (
             <motion.div
-              whileHover={{ rotate: 10, scale: 1.15 }}
+              whileHover={{ rotate: 5, scale: 1.1 }}
               transition={{ type: 'spring', stiffness: 400, damping: 15 }}
               className="card__icon"
               style={{
-                background: iconBg || 'rgba(14, 165, 233, 0.12)',
+                background: iconBg || 'var(--accent-light)',
                 color: iconColor || 'var(--accent)',
               }}
             >
@@ -63,7 +82,7 @@ export function Card({
 }
 
 /**
- * Animated neon Badge
+ * Clean Badge
  */
 export function Badge({ label, variant = 'neutral', icon: Icon, className = '' }) {
   const getVariantClass = () => {
@@ -91,7 +110,7 @@ export function Badge({ label, variant = 'neutral', icon: Icon, className = '' }
     <motion.span
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
-      whileHover={{ scale: 1.08 }}
+      whileHover={{ scale: 1.05 }}
       transition={{ type: 'spring', stiffness: 500, damping: 20 }}
       className={`badge ${getVariantClass()} ${className}`}
     >
@@ -102,7 +121,7 @@ export function Badge({ label, variant = 'neutral', icon: Icon, className = '' }
 }
 
 /**
- * Motion Animated Progress Bar
+ * Clean Progress Bar
  */
 export function ProgressBar({ value = 0, max = 100, color, showLabel = false, height = 8 }) {
   const pct = Math.min(100, Math.max(0, (value / max) * 100));
@@ -116,8 +135,7 @@ export function ProgressBar({ value = 0, max = 100, color, showLabel = false, he
           transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
           className="progress__fill"
           style={{
-            background: color || 'linear-gradient(90deg, var(--accent), var(--accent-alt))',
-            color: color || 'var(--accent)',
+            background: color || 'var(--accent)',
           }}
         />
       </div>
@@ -131,7 +149,7 @@ export function ProgressBar({ value = 0, max = 100, color, showLabel = false, he
 }
 
 /**
- * Motion Spinner with dual glowing rings
+ * Clean Spinner
  */
 export function Spinner({ size = 'md', color = 'var(--accent)' }) {
   const sizeMap = { sm: 20, md: 36, lg: 60 };
@@ -145,18 +163,12 @@ export function Spinner({ size = 'md', color = 'var(--accent)' }) {
         className="spinner__ring"
         style={{ width: dim, height: dim, borderTopColor: color }}
       />
-      <motion.div
-        animate={{ rotate: -360 }}
-        transition={{ repeat: Infinity, duration: 2, ease: 'linear' }}
-        className="spinner__outer-ring"
-        style={{ width: dim + 10, height: dim + 10 }}
-      />
     </div>
   );
 }
 
 /**
- * Interactive Check Item with Motion and Lucide Icons
+ * Check Item with Motion animation
  */
 export function CheckItem({ name, passed = true, reason, icon: CustomIcon, delay = 0 }) {
   return (
@@ -164,11 +176,11 @@ export function CheckItem({ name, passed = true, reason, icon: CustomIcon, delay
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.4, delay, ease: [0.16, 1, 0.3, 1] }}
-      whileHover={{ x: 6, backgroundColor: 'rgba(255, 255, 255, 0.04)' }}
+      whileHover={{ x: 4, backgroundColor: 'var(--surface-hover)' }}
       className={`check-item ${passed ? 'check-item--passed' : 'check-item--failed'}`}
     >
       <motion.div
-        whileHover={{ scale: 1.2, rotate: passed ? 10 : -10 }}
+        whileHover={{ scale: 1.15 }}
         transition={{ type: 'spring', stiffness: 400 }}
         className={`check-item__icon check-item__icon--${passed ? 'pass' : 'fail'}`}
       >
@@ -189,12 +201,12 @@ export function CheckItem({ name, passed = true, reason, icon: CustomIcon, delay
 }
 
 /**
- * Stat Pill with hover animation
+ * Stat Pill
  */
 export function StatPill({ label, value, color, icon: Icon }) {
   return (
     <motion.div
-      whileHover={{ y: -2, scale: 1.03 }}
+      whileHover={{ y: -2, scale: 1.02 }}
       transition={{ type: 'spring', stiffness: 400, damping: 17 }}
       className="stat-pill"
     >

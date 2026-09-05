@@ -7,7 +7,7 @@ import {
   Fingerprint,
 } from 'lucide-react';
 import { Card, Badge, CheckItem, ProgressBar } from '../common';
-import { confidenceToHex } from '../../utils/helpers';
+import { scoreToHex } from '../../utils/helpers';
 
 export function ValidationPanel({ validation }) {
   if (!validation) {
@@ -18,26 +18,19 @@ export function ValidationPanel({ validation }) {
     );
   }
 
-  const {
-    status,
-    score = validation.consistency_score ?? validation.score ?? (validation.checks?.length ? Math.round((validation.checks.filter(c => c.passed).length / validation.checks.length) * 100) : 0),
-    mrz_valid = false,
-    checks = [],
-    details = {},
-  } = validation;
-
-  const isPassed = validation.overall_valid ?? validation.valid ?? (status === 'PASS') ?? mrz_valid;
-  const numScore = typeof score === 'number' ? Math.round(score) : Number(score) || 0;
-  const color = confidenceToHex(numScore);
+  const score = Math.round(validation.consistency_score ?? validation.score ?? (validation.overall_valid ? 100 : 0));
+  const isPassed = Boolean(validation.overall_valid ?? validation.valid ?? (validation.status === 'PASS'));
+  const checks = validation.checks ?? [];
+  const color = scoreToHex(score);
 
   return (
     <Card
       title="MRZ & Structural Validation"
-      subtitle="Checksums, Expiration & ICAO Conformance"
+      subtitle="Checksums, Expiration & Document Integrity"
       icon={ShieldCheck}
       action={
         <Badge
-          label={isPassed ? 'VALID MRZ' : 'MRZ FAILED'}
+          label={isPassed ? 'VALID STRUCTURE' : 'VALIDATION FAILED'}
           variant={isPassed ? 'pass' : 'high'}
           icon={isPassed ? CheckCircle2 : XCircle}
         />

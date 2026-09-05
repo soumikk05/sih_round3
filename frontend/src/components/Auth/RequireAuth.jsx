@@ -14,7 +14,7 @@ export const RequireAuth = ({ children, allowedRoles }) => {
   if (allowedRoles && !allowedRoles.includes(user.role)) {
     // User role is not authorized for this route
     return (
-      <div className="min-h-screen flex items-center justify-center text-rose-500 font-mono">
+      <div className="min-h-screen flex items-center justify-center font-mono" style={{ color: 'var(--risk-high)' }}>
         <h1>403 - FORBIDDEN (Insufficient Clearance)</h1>
       </div>
     );

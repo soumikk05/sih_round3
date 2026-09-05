@@ -2,71 +2,71 @@
   "status": "trained",
   "dataset_version": "midv500_v1",
   "num_samples": 640,
-  "test_loss": 0.9429575800895691,
-  "test_accuracy": 0.6041666865348816,
+  "test_loss": 1.0966148376464844,
+  "test_accuracy": 0.5104166865348816,
   "classification_report": {
     "passport": {
-      "precision": 0.5789473684210527,
-      "recall": 0.4583333333333333,
-      "f1-score": 0.5116279069767442,
+      "precision": 1.0,
+      "recall": 0.041666666666666664,
+      "f1-score": 0.08,
       "support": 24.0
     },
     "national_id": {
-      "precision": 0.6,
-      "recall": 0.9375,
-      "f1-score": 0.7317073170731707,
+      "precision": 0.5052631578947369,
+      "recall": 1.0,
+      "f1-score": 0.6713286713286714,
       "support": 48.0
     },
     "driving_license": {
-      "precision": 1.0,
-      "recall": 0.08333333333333333,
-      "f1-score": 0.15384615384615385,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
       "support": 12.0
     },
     "permit": {
-      "precision": 1.0,
-      "recall": 0.08333333333333333,
-      "f1-score": 0.15384615384615385,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
       "support": 12.0
     },
-    "accuracy": 0.6041666666666666,
+    "accuracy": 0.5104166666666666,
     "macro avg": {
-      "precision": 0.7947368421052632,
-      "recall": 0.39062499999999994,
-      "f1-score": 0.38775688293555566,
+      "precision": 0.3763157894736842,
+      "recall": 0.2604166666666667,
+      "f1-score": 0.18783216783216783,
       "support": 96.0
     },
     "weighted avg": {
-      "precision": 0.6947368421052631,
-      "recall": 0.6041666666666666,
-      "f1-score": 0.53222217374231,
+      "precision": 0.5026315789473684,
+      "recall": 0.5104166666666666,
+      "f1-score": 0.3556643356643357,
       "support": 96.0
     }
   },
   "confusion_matrix": [
     [
-      11,
-      13,
-      0,
-      0
-    ],
-    [
-      3,
-      45,
-      0,
-      0
-    ],
-    [
       1,
-      10,
-      1,
+      23,
+      0,
       0
     ],
     [
-      4,
-      7,
       0,
-      1
+      48,
+      0,
+      0
+    ],
+    [
+      0,
+      12,
+      0,
+      0
+    ],
+    [
+      0,
+      12,
+      0,
+      0
     ]
   ],
   "framework": "tensorflow/keras",

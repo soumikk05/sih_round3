@@ -44,6 +44,7 @@ def compute_risk_score(
     metadata_result: Optional[Dict[str, Any]] = None,
     liveness_result: Optional[Dict[str, Any]] = None,
     ocr_result: Optional[Dict[str, Any]] = None,
+    cross_document_result: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """
     Main entry point for Risk Engine V2.
@@ -103,6 +104,13 @@ def compute_risk_score(
     all_reasons.extend(forensic_flags)
     all_reasons.extend(quality_flags)
 
+    # Cross-document consistency contribution
+    cross_doc_points = 0.0
+    if cross_document_result:
+        cross_doc_points = float(cross_document_result.get("risk_points", 0.0))
+        cross_flags = cross_document_result.get("flags", [])
+        all_reasons.extend(cross_flags)
+
     # Weighted Base Score
     base_risk_score = (
         validation_component * RISK_WEIGHT_VALIDATION
@@ -111,7 +119,7 @@ def compute_risk_score(
         + registry_component * RISK_WEIGHT_REGISTRY
     )
 
-    # Supplemental intake contributions (including identity cluster)
+    # Supplemental intake contributions (including identity cluster & cross-document consistency)
     raw_risk_score = min(
         100.0,
         base_risk_score
@@ -119,6 +127,7 @@ def compute_risk_score(
         + liveness_component * 0.10
         + ocr_component * 0.07
         + cluster_component  # identity cluster adds directly (already scaled to points)
+        + cross_doc_points   # cross-document evidence adds configurable points
     )
 
     # Hard security overrides:
@@ -147,6 +156,7 @@ def compute_risk_score(
         "face": round(face_component, 2),
         "registry": round(registry_component, 2),
         "identity_cluster": round(cluster_component, 2),
+        "cross_document_consistency": round(cross_doc_points, 2),
         "quality": round(quality_component, 2),
         "liveness": round(liveness_component, 2),
         "ocr_confidence": round(ocr_component, 2),
@@ -157,6 +167,7 @@ def compute_risk_score(
         "tampering": tampering_result,
         "face": face_result,
         "registry": registry_result,
+        "cross_document": cross_document_result,
         "quality": quality_result,
         "metadata": metadata_result,
         "liveness": liveness_result,
@@ -192,18 +203,32 @@ def compute_risk_score(
 
 
 def _score_validation(result: Optional[Dict[str, Any]]) -> tuple[float, List[str]]:
+    """
+    Weights failed checks by severity (HIGH/MEDIUM/LOW) rather than treating every
+    check equally. Equal-weighting made the score depend on how many checks happened
+    to run for a given document type (e.g. 8 for MRZ-backed passports vs 3-4 for
+    fallback national IDs) rather than on how serious the actual failure was —
+    the same single HIGH-severity failure could score 2-3x differently purely
+    because of document type. Severity weighting keeps scores comparable across
+    document types since it normalizes by total possible severity weight, not
+    raw check count.
+    """
     flags: List[str] = []
     if not result or not result.get("checks"):
         return 0.0, flags
 
+    severity_weight = {"HIGH": 3.0, "MEDIUM": 2.0, "LOW": 1.0}
+
     checks = result["checks"]
     failed = [c for c in checks if not c.get("passed")]
-    total = len(checks)
 
     for check in failed:
         flags.append(f"Validation: {check.get('message', check.get('reason', check.get('name')))}")
 
-    component = (len(failed) / total * 100.0) if total > 0 else 0.0
+    total_weight = sum(severity_weight.get(c.get("severity", "MEDIUM"), 2.0) for c in checks)
+    failed_weight = sum(severity_weight.get(c.get("severity", "MEDIUM"), 2.0) for c in failed)
+
+    component = (failed_weight / total_weight * 100.0) if total_weight > 0 else 0.0
     return component, flags
 
 
